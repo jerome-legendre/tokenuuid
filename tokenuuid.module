@@ -1,0 +1,69 @@
+<?php
+
+/**
+ * @file
+ * Contains tokenuuid.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+
+/**
+ * Implements hook_help().
+ */
+function tokenuuid_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the tokenuuid module.
+    case 'help.page.tokenuuid':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Create an Universally unique identifier token.') . '</p>';
+      return $output;
+    default:
+  }
+}
+
+/**
+ * Implements hook_token_info().
+ */
+function tokenuuid_token_info() {
+  $type = [
+    'name' => t('Nodes'),
+    'needs-data' => 'node',
+  ];
+  $node['uuid'] = [
+    'name' => t('Content UUID'),
+    'description' => t('The unique UUID of the content item, or "node".'),
+  ];
+  return [
+    'types' => ['node' => $type],
+    'tokens' => ['node' => $node],
+  ];
+}
+
+/**
+ * Implements hook_tokens().
+ *
+ * @param string $type machine name of the group (type)
+ * @param array $tokens tokens to be replaced.
+ * @param array $data An associative array of data objects
+ * @param array $options An associative array of options for token replacement
+ * @param \Drupal\Core\Render\BubbleableMetadata $bubbleableMetadata
+ *
+ * @return array  associative keyed by [type:token] strings
+ */
+function tokenuuid_tokens($type, $tokens, array $data, array $options, \Drupal\Core\Render\BubbleableMetadata $bubbleableMetadata) {
+  if ($type == 'node' && !empty($data['node'])) {
+    $node = $data['node'];
+    $replaced = [];
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case'uuid':
+          $replaced[$original] = $node->uuid();
+          break;
+      }
+    }
+    return $replaced;
+  }
+}
+
