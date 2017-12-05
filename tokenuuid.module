@@ -17,7 +17,13 @@ function tokenuuid_help($route_name, RouteMatchInterface $route_match) {
     case 'help.page.tokenuuid':
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('Create an Universally unique identifier token.') . '</p>';
+      $output .= '<p>' . t('Create an Universally unique identifier token for node, term, user, current-user entities.') . '</p>';
+      $output .= '<ul>' .
+        '<li>[node:uuid]</li>' .
+        '<li>[term:uuid]</li>' .
+        '<li>[user:uuid]</li>' .
+        '<li>[current-user:uuid]</li>' .
+      '</ul>';
       return $output;
     default:
   }
@@ -27,18 +33,31 @@ function tokenuuid_help($route_name, RouteMatchInterface $route_match) {
  * Implements hook_token_info().
  */
 function tokenuuid_token_info() {
-  $type = [
-    'name' => t('Nodes'),
-    'needs-data' => 'node',
-  ];
-  $node['uuid'] = [
+  // Node
+  $info['tokens']['node']['uuid'] = [
     'name' => t('Content UUID'),
     'description' => t('The unique UUID of the content item, or "node".'),
+    'needs-data' => 'node',
   ];
-  return [
-    'types' => ['node' => $type],
-    'tokens' => ['node' => $node],
+  // Term
+  if (\Drupal::moduleHandler()->moduleExists('taxonomy')) {
+    $info['tokens']['term']['uuid'] = [
+      'name' => t('Term UUID'),
+      'description' => t('The unique UUID of the Taxonomy term.'),
+    ];
+  }
+  // Current User
+  $info['tokens']['current-user']['uuid'] = [
+    'name' => t('Current user UUID'),
+    'description' => t('The unique UUID of the curent user.'),
   ];
+  // User
+  $info['tokens']['user']['uuid'] = [
+    'name' => t('User UUID'),
+    'description' => t('The unique UUID of the user.'),
+  ];
+
+  return $info;
 }
 
 /**
@@ -53,17 +72,21 @@ function tokenuuid_token_info() {
  * @return array  associative keyed by [type:token] strings
  */
 function tokenuuid_tokens($type, $tokens, array $data, array $options, \Drupal\Core\Render\BubbleableMetadata $bubbleableMetadata) {
-  if ($type == 'node' && !empty($data['node'])) {
-    $node = $data['node'];
-    $replaced = [];
-    foreach ($tokens as $name => $original) {
-      switch ($name) {
-        case'uuid':
-          $replaced[$original] = $node->uuid();
-          break;
+  $entity_types = ['node', 'user', 'current-user', 'term'];
+  foreach ($entity_types as $entity_type) {
+    if ($type == $entity_type && !empty($data[$entity_type])) {
+      drupal_set_message($entity_type);
+      $entity = $data[$entity_type];
+      $replaced = [];
+      foreach ($tokens as $name => $original) {
+        switch ($name) {
+          case 'uuid':
+            $replaced[$original] = $entity->uuid();
+            break;
+        }
       }
+      return $replaced;
     }
-    return $replaced;
   }
 }
 
