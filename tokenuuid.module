@@ -75,7 +75,6 @@ function tokenuuid_tokens($type, $tokens, array $data, array $options, \Drupal\C
   $entity_types = ['node', 'user', 'current-user', 'term'];
   foreach ($entity_types as $entity_type) {
     if ($type == $entity_type && !empty($data[$entity_type])) {
-      drupal_set_message($entity_type);
       $entity = $data[$entity_type];
       $replaced = [];
       foreach ($tokens as $name => $original) {
