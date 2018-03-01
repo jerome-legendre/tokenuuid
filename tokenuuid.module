@@ -16,8 +16,7 @@ function tokenuuid_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
     // Main module help for the tokenuuid module.
     case 'help.page.tokenuuid':
-      $output = '';
-      $output .= '<h3>' . t('About') . '</h3>';
+      $output = '<h3>' . t('About') . '</h3>';
       $output .= '<p>' . t('Create an Universally unique identifier token for node, term, user, current-user and all others content entities.') . '</p>';
       $output .= '<ul>';
       $output .= '<li>[current-user:uuid]</li>';
@@ -34,8 +33,8 @@ function tokenuuid_help($route_name, RouteMatchInterface $route_match) {
  * Implements hook_token_info().
  */
 function tokenuuid_token_info() {
-  $liste = tokenuuid_get_contententitytype_id();
-  foreach ($liste as $entity_id) {
+  $info['tokens'] = [];
+  foreach (tokenuuid_get_contententitytype_id() as $entity_id) {
     $info['tokens'][$entity_id]['uuid'] = [
       'name' => t('@entity_id UUID', ['@entity_id' => $entity_id]),
       'description' => t('The Universal Unique Identifier of @entity_id', ['@entity_id' => $entity_id]),
@@ -61,10 +60,8 @@ function tokenuuid_tokens($type, $tokens, array $data, array $options, \Drupal\C
       $entity = $data[$entity_id];
       $replaced = [];
       foreach ($tokens as $name => $original) {
-        switch ($name) {
-          case 'uuid':
+        if ($name == 'uuid') {
             $replaced[$original] = $entity->uuid();
-            break;
         }
       }
       return $replaced;
